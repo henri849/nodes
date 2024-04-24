@@ -39,7 +39,7 @@ class Motor(Node):
             self.angle += Unit.Angle(self.pulse_delta,"degrees")
         if self.rates[self.gear]<0:#if we are rotating CW
             self.angle -= Unit.Angle(self.pulse_delta,"degrees")
-            
+
         if self.rates[self.gear] == 0:# if our momentum carried us over when we stopped the motor
             self.get_logger().warn(f"{self.name} received pulse when gear=0! defaulting to last year setting")
             if self.rates[self.last_gear]>0: #if we are rotating CCW
@@ -63,7 +63,30 @@ class Motor(Node):
         GPIO.cleanup() # exit GPIO
         self.get_logger().info(f"{self.name} Exited")
         exit()
-        
+    
+    def Motor_Off(self):
+        self.last_gear = self.gear 
+        self.gear = 0 # set gear to zero
+        GPIO.output(self.enable,GPIO.LOW) #turn off motor
+        self.get_logger().debug("Motor Off")
+    
+    def Motor_On(self):
+        GPIO.output(self.enable,GPIO.HIGH) #turn motor on
+        self.get_logger().debug("Motor On")
+
+    def Set_Gear(self,_gear: int):
+        if _gear == 0: # Turns Motor Off
+            self.Motor_Off()
+        else:
+            if self.gear == 0:# If Motor is Off and we're turning it on
+                self.Motor_On()
+            
+            # Fun bitwise gearsetting, basically 1 gets mapped to A off B off, 2 A on B off, 3 A off B on, 4 A on B on
+            GPIO.output(self.A,(_gear-1)%2)
+            GPIO.output(self.B,((_gear-1)>>1)%2) 
+
+            self.last_gear = self.gear #saves last gear
+            self.gear = _gear #sets new gear
 
 if __name__ == "__main__":
     rclpy.init()# Starts ROS2
