@@ -17,3 +17,20 @@ winch = Motor(name = "Winch", enable_pin = 19, A_pin = 15, B_pin = 13, input_pin
 - **Subscriber**: Subscribes to `"controller"` topic which broadcasts 1 `Float32` angle in degrees, motor then goes torwards that angle, is configured to shutdown motor and node when it receives exactly `100000.6785755`
 - **Calibration** TBD with the electrical team
 - **ROS2 Debug/Info/Warnings**:
+    - DEBUG: `"{self.name} Enable Off"`
+    - DEBUG: `"{self.name} Enable On"`
+    - INFO: `"{self.name} Board On"`
+    - INFO: `"{self.name} Pins Enabled"`
+    - INFO: `"{self.name} GPIO Exited"`
+    - <y> WARN </y>: `"{self.name} received invalid target angle"`
+    - <y> WARN </y>: `"{self.name} received pulse when gear=0! defaulting to last gear setting"`
+    > [!NOTE]
+    > DEBUGs don't show up in the console by default
+
+
+<style>
+r { color: Red }
+o { color: Orange }
+y { color: Yellow }
+g { color: Green }
+</style>
