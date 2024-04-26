@@ -26,27 +26,32 @@ class Motor(Node):
         self.TargetAngle = Unit.Angle(0,"degrees") # angle the motor targets
         self.rates = {0:0,1:-100,2:100,3:-4000,4:4000} # different rates in rotations/minute
         self.last_gear = 0 # last speed setting
-        self.gear =  0# current speed setting
+        self.gear = 0# current speed setting
         self.pulse_delta = Unit.Angle(360/16,"degrees") # how often the motors get a pulse, 16ppr
 
         #Rotation detection
         GPIO.add_event_detect(self.inp, GPIO.RISING, callback = self.pulse) # event detector for motor pulse
 
         self.controller = self.create_subscription(Float32, 'controller', self.Set_Target_Angle, 5)
-        self.Close()
+        # self.Close()
 
     def Set_Target_Angle(self, angle):
+        #This should be a switch type statement but I think our python is too old for that
         if type(angle) == Float32: # if it's a ROS2 message
+            if angle.data == 100000.6785755: # Some random number that's probably never going to occure turns the motor off
+                self.Close()
             self.TargetAngle = Unit.Angle(angle.data, "degrees")
         elif type(angle) == float or type(angle) == int: # if you receive the angle as a float or integer
             self.TargetAngle = Unit.Angle(angle, "degrees")
         elif type(angle) == Unit.Angle: # if it's already an Angle object
             self.TargetAngle = angle
+        else:
+            self.get_logger().warn(f"{self.name} received invalid target angle")
         self.Go_To = True
 
     def pulse(self, channel):
         self.Pulse_Update_Rotation() # Updates self.angle to reflect receiving one pulse
-        if self.Go_To: # if we have some desired anlge this boolean gets turned on
+        if self.Go_To: # if we have some desired angle this boolean gets turned on
             self.Adjust_Motor()
     
     def Adjust_Motor(self):
