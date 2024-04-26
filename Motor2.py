@@ -32,7 +32,17 @@ class Motor(Node):
         #Rotation detection
         GPIO.add_event_detect(self.inp, GPIO.RISING, callback = self.pulse) # event detector for motor pulse
 
+        self.controller = self.create_subscription(Float32, 'controller', self.Set_Target_Angle, 5)
         self.Close()
+
+    def Set_Target_Angle(self, angle):
+        if type(angle) == Float32: # if it's a ROS2 message
+            self.TargetAngle = Unit.Angle(angle.data, "degrees")
+        elif type(angle) == float or type(angle) == int: # if you receive the angle as a float or integer
+            self.TargetAngle = Unit.Angle(angle, "degrees")
+        elif type(angle) == Unit.Angle: # if it's already an Angle object
+            self.TargetAngle = angle
+        self.Go_To = True
 
     def pulse(self, channel):
         self.Pulse_Update_Rotation() # Updates self.angle to reflect receiving one pulse
@@ -44,6 +54,7 @@ class Motor(Node):
         # This way in the worse case we're only half a pulse off, a pulse is 22.5 degrees but since it's geared down 10:1 half a pulse is only ~1.125 degrees
         if abs(self.angle.get_as("degrees")-self.TargetAngle.get_as("degrees"))<self.pulse_delta/2+5:
             self.Set_Gear(0)
+            self.Go_To = False
         else:
             if self.angle >= self.TargetAngle:#cw rotation
                 self.Set_Gear(1)
