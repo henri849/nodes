@@ -35,6 +35,22 @@ class Motor(Node):
         self.Close()
 
     def pulse(self, channel):
+        self.Pulse_Update_Rotation() # Updates self.angle to reflect receiving one pulse
+        if self.Go_To: # if we have some desired anlge this boolean gets turned on
+            self.Adjust_Motor()
+    
+    def Adjust_Motor(self):
+        #To avoid waisting power if we're within half a pulse of the target angle we turn the motor off (the +5 is to avoid rounding errors)
+        # This way in the worse case we're only half a pulse off, a pulse is 22.5 degrees but since it's geared down 10:1 half a pulse is only ~1.125 degrees
+        if abs(self.angle.get_as("degrees")-self.TargetAngle.get_as("degrees"))<self.pulse_delta/2+5:
+            self.Set_Gear(0)
+        else:
+            if self.angle >= self.TargetAngle:#cw rotation
+                self.Set_Gear(1)
+            if self.angle <= self.TargetAngle:#ccw rotation
+                self.Set_Gear(2)  
+    
+    def Pulse_Update_Rotation(self):
         if self.rates[self.gear]>0: #if we are rotating CCW
             self.angle += Unit.Angle(self.pulse_delta,"degrees")
         if self.rates[self.gear]<0:#if we are rotating CW
@@ -46,7 +62,7 @@ class Motor(Node):
                 self.angle += Unit.Angle(self.pulse_delta,"degrees")
             if self.rates[self.last_gear]<0:#if we are rotating CW
                 self.angle -= Unit.Angle(self.pulse_delta,"degrees")
-    
+
     def GPIO_Setup(self):
         #board mode
         GPIO.setmode(GPIO.BOARD)
@@ -81,7 +97,7 @@ class Motor(Node):
             if self.gear == 0:# If Motor is Off and we're turning it on
                 self.Motor_On()
             
-            # Fun bitwise gearsetting, basically 1 gets mapped to A off B off, 2 A on B off, 3 A off B on, 4 A on B on
+            # Fun bitwise gearsetting, basically _gear=1 gets mapped to A off B off, 2 A on B off, 3 A off B on, 4 A on B on
             GPIO.output(self.A,(_gear-1)%2)
             GPIO.output(self.B,((_gear-1)>>1)%2) 
 
