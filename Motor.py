@@ -38,7 +38,7 @@ class Motor(Node):
     def Set_Target_Angle(self, angle):
         #This should be a switch type statement but I think our python is too old for that
         if type(angle) == Float32: # if it's a ROS2 message
-            if angle.data == 100000.6785755: # Some random number that's probably never going to occure turns the motor off
+            if angle.data == 100678576.0: # Some random number that's probably never going to occure turns the motor off
                 self.Close()
             self.TargetAngle = Unit.Angle(angle.data, "degrees")
         elif type(angle) == float or type(angle) == int: # if you receive the angle as a float or integer
@@ -82,29 +82,29 @@ class Motor(Node):
     def GPIO_Setup(self):
         #board mode
         GPIO.setmode(GPIO.BOARD)
-        self.get_logger().info(f"{self.name} On")
+        self.get_logger().info(f"{self.name} Board On")
         #Input output initialization
         GPIO.setup(self.enable,GPIO.OUT)
         GPIO.setup(self.A,GPIO.OUT)
         GPIO.setup(self.B,GPIO.OUT)
         GPIO.setup(self.inp,GPIO.IN)
-        self.get_logger().info(f"{self.name} Enabled")
+        self.get_logger().info(f"{self.name} Pins Enabled")
     
     def Close(self):
         GPIO.output(self.enable,GPIO.LOW) # turn motor off
         GPIO.cleanup() # exit GPIO
-        self.get_logger().info(f"{self.name} Exited")
+        self.get_logger().info(f"{self.name} GPIO Exited")
         exit()
     
     def Motor_Off(self):
         self.last_gear = self.gear 
         self.gear = 0 # set gear to zero
         GPIO.output(self.enable,GPIO.LOW) #turn off motor
-        self.get_logger().debug("Motor Off")
+        self.get_logger().debug(f"{self.name} Enable Off")
     
     def Motor_On(self):
         GPIO.output(self.enable,GPIO.HIGH) #turn motor on
-        self.get_logger().debug("Motor On")
+        self.get_logger().debug(f"{self.name} Enable On")
 
     def Set_Gear(self,_gear: int):
         if _gear == 0: # Turns Motor Off

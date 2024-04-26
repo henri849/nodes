@@ -14,7 +14,8 @@ compass = Compass(serial.Serial(port="/dev/ttyUSB0", baudrate=19200))
 ```python
 winch = Motor(name = "Winch", enable_pin = 19, A_pin = 15, B_pin = 13, input_pin = 11)
 ```
-- **Subscriber**: Subscribes to `"controller"` topic which broadcasts 1 `Float32` angle in degrees, motor then goes torwards that angle, is configured to shutdown motor and node when it receives exactly `100000.6785755`
+- **Subscriber**: Subscribes to `"controller"` topic which broadcasts 1 `Float32` angle in degrees, motor then goes torwards that angle
+- **Shutdown** is configured to shutdown motor and node when it receives exactly `100678576.0`
 - **Calibration** TBD with the electrical team
 - **ROS2 Debug/Info/Warnings**:
     - DEBUG: `"{self.name} Enable Off"`
