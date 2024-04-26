@@ -17,9 +17,10 @@
 - [ ] Autonomous
 - [ ] Website
 - [ ] Camera
+
 ## Things that we kinda need to do:
-- [ ] Document and comment the code better
-- [ ] Use github
 - [ ] Use testing code
+- [x] Document and comment the code better
+- [x] Use git
 ## Last thing
 - [ ] Compleat the todo list
