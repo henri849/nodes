@@ -47,6 +47,8 @@ class Motor(Node):
             self.TargetAngle = angle
         else:
             self.get_logger().warn(f"{self.name} received invalid target angle")
+        self.get_logger().info(f"{self.name} received new target angle")
+        self.Adjust_Motor()
         self.Go_To = True
 
     def pulse(self, channel):
