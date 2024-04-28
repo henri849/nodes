@@ -28,6 +28,24 @@ winch = Motor(name = "Winch", enable_pin = 19, A_pin = 15, B_pin = 13, input_pin
     > [!NOTE]
     > DEBUGs don't show up in the console by default
 
+## Radio:
+- **Constructor**: `Radio` takes 1 *PySerial* object ex:
+```python
+radio = Radio(serial.Serial(port="/dev/ttyACM0", baudrate=57600))
+```
+- **Publisher**: Publishes 1 `Float32MultiArray` object containing two floats, left knob, then right knob, under either the `"radio"` topic or the `"controller"` topic
+- **ROS2 Debug/Info/Warnings**: It sends out a debug with the radio data whenever it parses 
+
+## Wind Sensor:
+- **Constructor**: `WindSensor` takes 1 *adafruit_ads7830.ads7830.ADC* chanel object ex:
+```python
+i2c = board.I2C()
+adc = ADC.ADS7830(i2c)
+chan = AnalogIn(adc, 3)
+anemometer = WindSensor(chan)
+```
+- **Publisher**: Publishes 1 `Float32` object containing wind angle in degrees under either the `"Wind"` topic
+- **ROS2 Debug/Info/Warnings**: It sends out a debug with the radio data in raw and processed whenever it parses 
 
 <style>
 r { color: Red }
