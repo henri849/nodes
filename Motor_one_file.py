@@ -21,9 +21,9 @@ class Motor(Node):
         self.idx = radio_idx
         self.ppr = 2
         if radio_idx == 0:
-            self.ppr = 4
+            self.ppr = 1*2
         if radio_idx == 1:
-            self.ppr = 8
+            self.ppr = 16*2
         #GPIO - sets up all input-output functionallity
         self.GPIO_Setup()
 
@@ -34,27 +34,26 @@ class Motor(Node):
         #self.rates = {0:0,1:-800,2:800,3:-400,4:400} # different rates in rotations/minute
 
         if radio_idx == 0:
-            self.rates = {0:0,1:800,2:-800,3:-400,4:400} # different rates in rotations/minute
+            self.rates = {0:0,1:-400,2:400,3:-400,4:400} # different rates in rotations/minute
             self.offset= 0
         if radio_idx == 1:
-            self.rates = {0:0,1:-10,2:10,3:200,4:400} # different rates in rotations/minute
+            self.rates = {0:0,1:-350,2:350,3:200,4:400} # different rates in rotations/minute
             self.offset = 0
 
         self.last_gear = 0 # last speed setting
         self.gear = 0# current speed setting
         self.pulse_delta = Unit.Angle(36/self.ppr,"degrees") # how often the motors get a pulse, 16ppr
-
-        self.Motor_On()
-        self.Set_Gear(1)# 1 is in, 2 is out
+        # self.Motor_On()
+        # self.Set_Gear(1)# 1 is in, 2 is out
         # time.sleep(10)
-        msg = Float32MultiArray()
-        msg.data = [-180.0,-20.0]#- is in + is out
-        self.Set_Target_Angle(msg)
-        time.sleep(7.5)
-        self.Motor_Off()
-        self.Close()
-        # self.controller = self.create_subscription(Float32MultiArray,'controller', self.Set_Target_Angle, 5)
-        # self.Close()
+        #msg = Float32MultiArray()
+        #msg.data = [-360.0*4,-36.0]#- is in + is out
+        #self.Set_Target_Angle(msg)
+        #time.sleep(1*4)
+        #self.Motor_Off()
+        #self.Close()
+        self.controller = self.create_subscription(Float32MultiArray,'controller', self.Set_Target_Angle, 5)
+        #self.Close()
 
     def Set_Target_Angle(self, angle):
         #This should be a switch type statement but I think our python is too old for that
@@ -73,7 +72,7 @@ class Motor(Node):
         self.Go_To = True
 
     def pulse(self, channel):
-        # print("pulse received")
+        #print("pulse received")
         self.Pulse_Update_Rotation() # Updates self.angle to reflect receiving one pulse
         self.get_logger().info(f"{self.name} received pulse, "+str(self.angle.get_as("degrees")))
 
@@ -84,7 +83,7 @@ class Motor(Node):
         #To avoid waisting power if we're within half a pulse of the target angle we turn the motor off (the +5 is to avoid rounding errors)
         # This way in the worse case we're only half a pulse off, a pulse is 22.5 degrees but since it's geared down 10:1 half a pulse is only ~1.125 degrees
         # print(self.angle.get_as("degrees"),abs(self.angle.get_as("degrees")-self.TargetAngle.get_as("degrees")),self.pulse_delta.get_as("degrees")/2+5)
-        if abs(self.angle.get_as("degrees")-self.TargetAngle.get_as("degrees"))<self.pulse_delta.get_as("degrees")/2+5:
+        if abs(self.angle.get_as("degrees")-self.TargetAngle.get_as("degrees"))<self.pulse_delta.get_as("degrees")/2+0.5:
             self.Set_Gear(0)
             self.Go_To = False
         else:
@@ -118,7 +117,7 @@ class Motor(Node):
         self.get_logger().info(f"{self.name} Pins Enabled")
         
         #Rotation detection
-        GPIO.add_event_detect(self.inp, GPIO.RISING, callback = self.pulse) # event detector for motor pulse
+        GPIO.add_event_detect(self.inp, GPIO.BOTH, callback = self.pulse) # event detector for motor pulse
         self.get_logger().info(f"{self.name} Event Detector Enabled")
 
     def Close(self):
@@ -141,20 +140,20 @@ class Motor(Node):
         if _gear == 0: # Turns Motor Off
             self.Motor_Off()
         else:
-            if self.gear == 0:# If Motor is Off and we're turning it on
+            self.last_gear = self.gear #saves last gear
+            self.gear = _gear #sets new gear
+
+            if self.last_gear == 0:# If Motor is Off and we're turning it on
                 self.Motor_On()
-    
             # Fun bitwise gearsetting, basically _gear=1 gets mapped to A off B off, 2 A on B off, 3 A off B on, 4 A on B on
             GPIO.output(self.A,(_gear-1+self.offset)%2)
             GPIO.output(self.B,((_gear-1+self.offset)>>1)%2) 
 
-            self.last_gear = self.gear #saves last gear
-            self.gear = _gear #sets new gear
 
 if __name__ == "__main__":
     rclpy.init()# Starts ROS2
-    m1 = Motor(name = "Winch", enable_pin = 19, A_pin = 15, B_pin = 13, input_pin = 23, radio_idx=0)#Creates Winch object
-    #m1 = Motor(name = "Rudder", enable_pin = 16, A_pin = 18, B_pin = 22, input_pin = 24, radio_idx=1)#Creates Winch object
+    #m1 = Motor(name = "Winch", enable_pin = 19, A_pin = 15, B_pin = 13, input_pin = 23, radio_idx=0)#Creates Winch object
+    m1 = Motor(name = "Rudder", enable_pin = 16, A_pin = 18, B_pin = 22, input_pin = 24, radio_idx=1)#Creates Winch object
     rclpy.spin(m1)# Launches Winch
     m1.destroy_node()# Destroys Winch once it's done running
     rclpy.shutdown()# Turns ROS2 Off
