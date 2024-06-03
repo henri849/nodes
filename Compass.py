@@ -20,7 +20,7 @@ class Compass(Node):
                      parse = self.parse(sentence)
                      msg.data = parse
                      self.publisher_.publish(msg)
-                     self.get_logger().debug('compass' + str(msg.data))
+                     self.get_logger().info('compass' + str(msg.data))
                 sentence = []
             else:
                 sentence.append(inp)

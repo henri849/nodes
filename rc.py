@@ -1,24 +1,28 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float32, Char
-import radio
-import compass
-
+# import radio
+# import compass
+import time
 class RC(Node):
 
     def __init__(self):
         super().__init__('RC')
-        self.compass = self.create_subscription(
-            Float32,
-            'compass',
-            self.compass_callback,
-            5)
-        self.radio = self.create_subscription(
-            Float32,
-            'radio',
-            self.radio_callback,
-            5)
+        # self.compass = self.create_subscription(
+        #     Float32,
+        #     'compass',
+        #     self.compass_callback,
+        #     5)
+        # self.radio = self.create_subscription(
+        #     Float32,
+        #     'radio',
+        #     self.radio_callback,
+        #     5)
         self.publisher_ = self.create_publisher(Float32, 'controller', 5)
+        msg2 = Float32()
+        msg2.data = 100678576.0
+        self.publisher_.publish(msg2)
+        exit()
 
 
     def compass_callback(self, msg):
@@ -38,7 +42,6 @@ if __name__  == "__main__":
     print("RC Node created")
     rclpy.spin(rc_node)
 
-
-    minimal_subscriber.destroy_node()
+    rc_node.destroy_node()
     print("Shutting down RC")
     rclpy.shutdown()

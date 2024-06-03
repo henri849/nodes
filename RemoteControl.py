@@ -1,4 +1,5 @@
 import rclpy
+import pygame
 from rclpy.node import Node
 from std_msgs.msg import Float32
 
@@ -13,6 +14,8 @@ class RemoteController(Node):
             self.radio_callBack,
             5)
     def radio_callBack(self, msg):
+        self.get_logger().info('Motor: "%s"' % str(msg.data))
+        self.publisher_.publish(msg)
         print(msg)
 def main():
     rclpy.init()
